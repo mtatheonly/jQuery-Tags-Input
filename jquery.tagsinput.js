@@ -11,11 +11,18 @@
 	http://www.opensource.org/licenses/mit-license.php
 
 	ben@xoxco.com
+	
+	Modified by tadeu.andrade@gmail.com
 
 */
 
 (function($) {
 
+	var escapePrimeFaces = function(value) {
+		return "#" + value.replace(":","\\:");
+	};
+	
+	
 	var delimiter = new Array();
 	var tags_callbacks = new Array();
 	$.fn.doAutosize = function(o){
@@ -23,7 +30,7 @@
 	        maxWidth = $(this).data('maxwidth'),
 	        val = '',
 	        input = $(this),
-	        testSubject = $('#'+$(this).data('tester_id'));
+	        testSubject = $(escapePrimeFaces($(this).data('tester_id')));
 	
 	    if (val === (val = input.val())) {return;}
 	
@@ -62,7 +69,7 @@
             whiteSpace: 'nowrap'
         }),
         testerId = $(this).attr('id')+'_autosize_tester';
-    if(! $('#'+testerId).length > 0){
+    if(! $(escapePrimeFaces(testerId)).length > 0){
       testSubject.attr('id', testerId);
       testSubject.appendTo('body');
     }
@@ -89,7 +96,7 @@
 					var skipTag = $(this).tagExist(value);
 					if(skipTag == true) {
 					    //Marks fake input as not_valid to let styling it
-    				    $('#'+id+'_tag').addClass('not_valid');
+    				    $(escapePrimeFaces(id)+'_tag').addClass('not_valid');
     				}
 				} else {
 					var skipTag = false; 
@@ -100,20 +107,20 @@
                         $('<span>').text(value).append('&nbsp;&nbsp;'),
                         $('<a>', {
                             href  : '#',
-                            title : 'Removing tag',
+                            title : 'Remover',
                             text  : 'x'
                         }).click(function () {
-                            return $('#' + id).removeTag(escape(value));
+                            return $(escapePrimeFaces(id)).removeTag(escape(value));
                         })
-                    ).insertBefore('#' + id + '_addTag');
+                    ).insertBefore(escapePrimeFaces(id) + '_addTag');
 
 					tagslist.push(value);
 				
-					$('#'+id+'_tag').val('');
+					$(escapePrimeFaces(id)+'_tag').val('');
 					if (options.focus) {
-						$('#'+id+'_tag').focus();
+						$(escapePrimeFaces(id)+'_tag').focus();
 					} else {		
-						$('#'+id+'_tag').blur();
+						$(escapePrimeFaces(id)+'_tag').blur();
 					}
 					
 					$.fn.tagsInput.updateTagsField(this,tagslist);
@@ -142,7 +149,7 @@
 	
 				var old = $(this).val().split(delimiter[id]);
 					
-				$('#'+id+'_tagsinput .tag').remove();
+				$(escapePrimeFaces(id)+'_tagsinput .tag').remove();
 				str = '';
 				for (i=0; i< old.length; i++) { 
 					if (old[i]!=value) { 
@@ -170,7 +177,7 @@
 	// clear all existing tags and import new ones from a string
 	$.fn.importTags = function(str) {
                 id = $(this).attr('id');
-		$('#'+id+'_tagsinput .tag').remove();
+		$(escapePrimeFaces(id)+'_tagsinput .tag').remove();
 		$.fn.tagsInput.importTags(this,str);
 	}
 		
@@ -189,7 +196,11 @@
       placeholderColor:'#666666',
       autosize: true,
       comfortZone: 20,
-      inputPadding: 6*2
+      inputPadding: 6*2,
+      'separators': [ ','],
+      'removeTagText': 'Remove tag',
+      'onlyNumbers' : false
+    	  
     },options);
 
 		this.each(function() { 
@@ -203,10 +214,10 @@
 			
 			var data = jQuery.extend({
 				pid:id,
-				real_input: '#'+id,
-				holder: '#'+id+'_tagsinput',
-				input_wrapper: '#'+id+'_addTag',
-				fake_input: '#'+id+'_tag'
+				real_input: escapePrimeFaces(id),
+				holder: escapePrimeFaces(id)+'_tagsinput',
+				input_wrapper: escapePrimeFaces(id)+'_addTag',
+				fake_input: escapePrimeFaces(id)+'_tag'
 			},settings);
 	
 			delimiter[id] = data.delimiter;
@@ -261,7 +272,7 @@
 						$(data.fake_input).autocomplete(settings.autocomplete_url, settings.autocomplete);
 						$(data.fake_input).bind('result',data,function(event,data,formatted) {
 							if (data) {
-								$('#'+id).addTag(data[0] + "",{focus:true,unique:(settings.unique)});
+								$(escapePrimeFaces(id)).addTag(data[0] + "",{focus:true,unique:(settings.unique)});
 							}
 					  	});
 					} else if (jQuery.ui.autocomplete !== undefined) {
@@ -291,15 +302,20 @@
 				}
 				// if user types a comma, create a new tag
 				$(data.fake_input).bind('keypress',data,function(event) {
-					if (event.which==event.data.delimiter.charCodeAt(0) || event.which==13 ) {
-					    event.preventDefault();
-						if( (event.data.minChars <= $(event.data.fake_input).val().length) && (!event.data.maxChars || (event.data.maxChars >= $(event.data.fake_input).val().length)) )
-							$(event.data.real_input).addTag($(event.data.fake_input).val(),{focus:true,unique:(settings.unique)});
-					  	$(event.data.fake_input).resetAutosize(settings);
-						return false;
-					} else if (event.data.autosize) {
-			            $(event.data.fake_input).doAutosize(settings);
-            
+				    var separators = event.data.separators;
+				    for(var i=0; i< separators.length; i++) {
+				        if(event.which == separators[i].charCodeAt(0) || event.which == 13) {
+				            event.preventDefault();
+				            if($(event.data.fake_input).val().length > event.data.maxChars || $(event.data.fake_input).val().length < event.data.minChars) {
+				            	$(event.data.fake_input).addClass('not_valid');
+				            }
+				            if( (event.data.minChars <= $(event.data.fake_input).val().length) && (!event.data.maxChars || (event.data.maxChars >= $(event.data.fake_input).val().length)) )
+				                $(event.data.real_input).addTag($(event.data.fake_input).val(),{focus:true,unique:(settings.unique)});
+				            $(event.data.fake_input).resetAutosize(settings);
+						    return false;    
+				        } else if (event.data.autosize) {
+    			            $(event.data.fake_input).doAutosize(settings);
+          			    }
           			}
 				});
 				//Delete last tag on backspace
@@ -311,7 +327,7 @@
 						 var last_tag = $(this).closest('.tagsinput').find('.tag:last').text();
 						 var id = $(this).attr('id').replace(/_tag$/, '');
 						 last_tag = last_tag.replace(/[\s]+x$/, '');
-						 $('#' + id).removeTag(escape(last_tag));
+						 $(escapePrimeFaces(id)).removeTag(escape(last_tag));
 						 $(this).trigger('focus');
 					}
 				});
@@ -325,6 +341,14 @@
 				        }
 				    });
 				}
+				
+				data.onlyNumbers && $(data.fake_input).bind('keyup', function(event){
+					if (/\D/g.test(this.value)) {
+					// Filter non-digits from input value.
+						this.value = this.value.replace(/\D/g, '');
+					}
+				});
+				
 			} // if settings.interactive
 		});
 			
