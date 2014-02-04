@@ -18,7 +18,7 @@
 
 (function($) {
 
-	var escapePrimeFaces = function(value) {
+	var escapePrimeFacesId = function(value) {
 		return "#" + value.replace(":","\\:");
 	};
 	
@@ -30,7 +30,7 @@
 	        maxWidth = $(this).data('maxwidth'),
 	        val = '',
 	        input = $(this),
-	        testSubject = $(escapePrimeFaces($(this).data('tester_id')));
+	        testSubject = $(escapePrimeFacesId($(this).data('tester_id')));
 	
 	    if (val === (val = input.val())) {return;}
 	
@@ -69,7 +69,7 @@
             whiteSpace: 'nowrap'
         }),
         testerId = $(this).attr('id')+'_autosize_tester';
-    if(! $(escapePrimeFaces(testerId)).length > 0){
+    if(! $(escapePrimeFacesId(testerId)).length > 0){
       testSubject.attr('id', testerId);
       testSubject.appendTo('body');
     }
@@ -96,7 +96,7 @@
 					var skipTag = $(this).tagExist(value);
 					if(skipTag == true) {
 					    //Marks fake input as not_valid to let styling it
-    				    $(escapePrimeFaces(id)+'_tag').addClass('not_valid');
+    				    $(escapePrimeFacesId(id)+'_tag').addClass('not_valid');
     				}
 				} else {
 					var skipTag = false; 
@@ -110,17 +110,17 @@
                             title : 'Remover',
                             text  : 'x'
                         }).click(function () {
-                            return $(escapePrimeFaces(id)).removeTag(escape(value));
+                            return $(escapePrimeFacesId(id)).removeTag(escape(value));
                         })
-                    ).insertBefore(escapePrimeFaces(id) + '_addTag');
+                    ).insertBefore(escapePrimeFacesId(id) + '_addTag');
 
 					tagslist.push(value);
 				
-					$(escapePrimeFaces(id)+'_tag').val('');
+					$(escapePrimeFacesId(id)+'_tag').val('');
 					if (options.focus) {
-						$(escapePrimeFaces(id)+'_tag').focus();
+						$(escapePrimeFacesId(id)+'_tag').focus();
 					} else {		
-						$(escapePrimeFaces(id)+'_tag').blur();
+						$(escapePrimeFacesId(id)+'_tag').blur();
 					}
 					
 					$.fn.tagsInput.updateTagsField(this,tagslist);
@@ -149,7 +149,7 @@
 	
 				var old = $(this).val().split(delimiter[id]);
 					
-				$(escapePrimeFaces(id)+'_tagsinput .tag').remove();
+				$(escapePrimeFacesId(id)+'_tagsinput .tag').remove();
 				str = '';
 				for (i=0; i< old.length; i++) { 
 					if (old[i]!=value) { 
@@ -177,7 +177,7 @@
 	// clear all existing tags and import new ones from a string
 	$.fn.importTags = function(str) {
                 id = $(this).attr('id');
-		$(escapePrimeFaces(id)+'_tagsinput .tag').remove();
+		$(escapePrimeFacesId(id)+'_tagsinput .tag').remove();
 		$.fn.tagsInput.importTags(this,str);
 	}
 		
@@ -214,10 +214,10 @@
 			
 			var data = jQuery.extend({
 				pid:id,
-				real_input: escapePrimeFaces(id),
-				holder: escapePrimeFaces(id)+'_tagsinput',
-				input_wrapper: escapePrimeFaces(id)+'_addTag',
-				fake_input: escapePrimeFaces(id)+'_tag'
+				real_input: escapePrimeFacesId(id),
+				holder: escapePrimeFacesId(id)+'_tagsinput',
+				input_wrapper: escapePrimeFacesId(id)+'_addTag',
+				fake_input: escapePrimeFacesId(id)+'_tag'
 			},settings);
 	
 			delimiter[id] = data.delimiter;
@@ -272,7 +272,7 @@
 						$(data.fake_input).autocomplete(settings.autocomplete_url, settings.autocomplete);
 						$(data.fake_input).bind('result',data,function(event,data,formatted) {
 							if (data) {
-								$(escapePrimeFaces(id)).addTag(data[0] + "",{focus:true,unique:(settings.unique)});
+								$(escapePrimeFacesId(id)).addTag(data[0] + "",{focus:true,unique:(settings.unique)});
 							}
 					  	});
 					} else if (jQuery.ui.autocomplete !== undefined) {
@@ -327,7 +327,7 @@
 						 var last_tag = $(this).closest('.tagsinput').find('.tag:last').text();
 						 var id = $(this).attr('id').replace(/_tag$/, '');
 						 last_tag = last_tag.replace(/[\s]+x$/, '');
-						 $(escapePrimeFaces(id)).removeTag(escape(last_tag));
+						 $(escapePrimeFacesId(id)).removeTag(escape(last_tag));
 						 $(this).trigger('focus');
 					}
 				});
